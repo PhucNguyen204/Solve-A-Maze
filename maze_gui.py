@@ -1,7 +1,7 @@
 import random
-from typing import List, NamedTuple, TypeVar, Set, Dict, Optional, Callable  # Thêm import Callable
+from typing import List, NamedTuple, TypeVar, Set, Dict, Optional, Callable  
 from enum import Enum
-from data_structures import Node, PriorityQueue, node_to_path  # Sửa lại import statement
+from data_structures import Node, PriorityQueue, node_to_path 
 from tkinter import *
 from tkinter.ttk import *
 
@@ -43,7 +43,7 @@ class MazeGUI:
         self._grid[start.row][start.column] = Cell.START
         self._grid[goal.row][goal.column] = Cell.GOAL
         self._setup_GUI()
-        self._setting_goal = False  # Flag to indicate if we are setting the goal
+        self._setting_goal = False 
         self.root.mainloop()  # Đảm bảo mainloop được gọi ở đây
 
     # Thiết lập GUI
@@ -59,19 +59,19 @@ class MazeGUI:
         # Thiết lập style cho các widget
         style: Style = Style()
         style.theme_use('classic')
-        style.configure("BG.TLabel", foreground="black", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure("BG.TButton", foreground="black", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure("BG.TListbox", foreground="black", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure("BG.TCombobox", foreground="black", font=('Helvetica', 14))  # Giảm kích thước font
+        style.configure("BG.TLabel", foreground="black", font=('Helvetica', 14))  
+        style.configure("BG.TButton", foreground="black", font=('Helvetica', 14))  
+        style.configure("BG.TListbox", foreground="black", font=('Helvetica', 14)) 
+        style.configure("BG.TCombobox", foreground="black", font=('Helvetica', 14))  
         style.configure(" ", foreground="black", background="white")
-        style.configure(Cell.EMPTY.value + ".TLabel", foreground="black", background="white", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure(Cell.BLOCKED.value + ".TLabel", foreground="white", background="black", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure(Cell.START.value + ".TLabel", foreground="black", background="green", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure(Cell.GOAL.value + ".TLabel", foreground="black", background="red", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure(Cell.PATH.value + ".TLabel", foreground="black", background="cyan", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure(Cell.EXPLORED.value + ".TLabel", foreground="black", background="yellow", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure(Cell.CURRENT.value + ".TLabel", foreground="black", background="blue", font=('Helvetica', 14))  # Giảm kích thước font
-        style.configure(Cell.FRONTIER.value + ".TLabel", foreground="black", background="orange", font=('Helvetica', 14))  # Giảm kích thước font
+        style.configure(Cell.EMPTY.value + ".TLabel", foreground="black", background="white", font=('Helvetica', 14))  
+        style.configure(Cell.BLOCKED.value + ".TLabel", foreground="white", background="black", font=('Helvetica', 14))  
+        style.configure(Cell.START.value + ".TLabel", foreground="black", background="green", font=('Helvetica', 14))  
+        style.configure(Cell.GOAL.value + ".TLabel", foreground="black", background="red", font=('Helvetica', 14))  
+        style.configure(Cell.PATH.value + ".TLabel", foreground="black", background="cyan", font=('Helvetica', 14))  
+        style.configure(Cell.EXPLORED.value + ".TLabel", foreground="black", background="yellow", font=('Helvetica', 14))  
+        style.configure(Cell.CURRENT.value + ".TLabel", foreground="black", background="blue", font=('Helvetica', 14))  
+        style.configure(Cell.FRONTIER.value + ".TLabel", foreground="black", background="orange", font=('Helvetica', 14)) 
         # Đặt các nhãn ở bên cạnh
         for row in range(self._rows):
             Grid.rowconfigure(frame, row, weight=1)
@@ -148,11 +148,11 @@ class MazeGUI:
                 cell: Cell = self._grid[row][column]
                 cell_label: Label = self._cell_labels[row][column]
                 cell_label.configure(style=cell.value + ".TLabel")
-                cell_label.bind("<Button-1>", lambda e, r=row, c=column: self.on_cell_click(r, c))  # Bind click event
+                cell_label.bind("<Button-1>", lambda e, r=row, c=column: self.on_cell_click(r, c)) 
     #chọn Goal
     def on_cell_click(self, row: int, column: int):
         if self._setting_goal:
-            if self._grid[row][column] != Cell.BLOCKED:  # Ensure the goal is not set on a blocked cell
+            if self._grid[row][column] != Cell.BLOCKED: 
                 self._grid[self.goal.row][self.goal.column] = Cell.EMPTY  
                 self.goal = MazeLocation(row, column)
                 self._grid[row][column] = Cell.GOAL
@@ -161,11 +161,10 @@ class MazeGUI:
 
     def set_goal(self):
         self._setting_goal = True
-        print("Click on a cell to set it as the goal.")  # Optional: Print a message to guide the user
-
+        print("Click on a cell to set it as the goal.") 
     # Thực hiện một bước trong thuật toán
     def step(self, frontier, explored, costs, last_node):
-        if isinstance(frontier, PriorityQueue) and not frontier.empty:  # Ensure empty is called as a property
+        if isinstance(frontier, PriorityQueue) and not frontier.empty:  
             current_node: Node[T] = frontier.pop()
             current_state: T = current_node.state
             self._frontier_listbox.delete(0, 0)
@@ -177,8 +176,8 @@ class MazeGUI:
                 path = node_to_path(current_node)
                 self.mark(path)
                 self._display_grid()
-                return  # Stop further execution
-            # Check next cells and unexplored cells
+                return  
+      
             for child in self.successors(current_state):
                 new_cost = current_node.cost + 1
                 if child not in costs or new_cost < costs[child]:
@@ -198,7 +197,7 @@ class MazeGUI:
             num_delay = int(self._interval_box.get()) * 1000
             self.root.after(num_delay, self.step, frontier, explored, costs, current_node)
         else:
-            # If the frontier is empty and goal is not found, display a message
+  
             print("No path found to the goal.")
 
     # Thuật toán A* để tìm đường đi
