@@ -280,7 +280,7 @@ class MazeGUI:
     # Chạy thuật toán A*
     def run_astar(self):
         self.clear()
-        initial_node = Node(self.start, None, 0.0, self.euclidean_distance(self.goal)(self.start))  # Or use Manhattan distance
+        initial_node = Node(self.start, None, 0.0, self.euclidean_distance(self.goal)(self.start)) #hoạc dùng hàm manhattan_distance
         frontier = PriorityQueue()
         frontier.push(initial_node)
         explored = set()
