@@ -1,2 +1,3 @@
 # Solve-A-Maze
-Fuck
+Fckkkk
+
