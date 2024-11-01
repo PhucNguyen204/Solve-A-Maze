@@ -149,51 +149,57 @@ class MazeGUI:
                 cell_label: Label = self._cell_labels[row][column]
                 cell_label.configure(style=cell.value + ".TLabel")
                 cell_label.bind("<Button-1>", lambda e, r=row, c=column: self.on_cell_click(r, c))  # Bind click event
-
+    #chọn Goal
     def on_cell_click(self, row: int, column: int):
         if self._setting_goal:
-            self._grid[self.goal.row][self.goal.column] = Cell.EMPTY  # Clear the old goal
-            self.goal = MazeLocation(row, column)
-            self._grid[row][column] = Cell.GOAL
-            self._setting_goal = False
-            self._display_grid()
+            if self._grid[row][column] != Cell.BLOCKED:  # Ensure the goal is not set on a blocked cell
+                self._grid[self.goal.row][self.goal.column] = Cell.EMPTY  
+                self.goal = MazeLocation(row, column)
+                self._grid[row][column] = Cell.GOAL
+                self._setting_goal = False
+                self._display_grid()
 
     def set_goal(self):
         self._setting_goal = True
+        print("Click on a cell to set it as the goal.")  # Optional: Print a message to guide the user
 
     # Thực hiện một bước trong thuật toán
-    def step(self, frontier, explored, last_node):
-        if isinstance(frontier, PriorityQueue) and not frontier.empty:  # Đảm bảo empty được gọi như một thuộc tính
+    def step(self, frontier, explored, costs, last_node):
+        if isinstance(frontier, PriorityQueue) and not frontier.empty:  # Ensure empty is called as a property
             current_node: Node[T] = frontier.pop()
             current_state: T = current_node.state
             self._frontier_listbox.delete(0, 0)
             self._grid[current_state.row][current_state.column] = Cell.CURRENT
             if last_node is not None:
                 self._grid[last_node.state.row][last_node.state.column] = Cell.EXPLORED
-            # Nếu tìm thấy đích, kết thúc
+            # If the goal is found, stop
             if self.goal_test(current_state):
                 path = node_to_path(current_node)
                 self.mark(path)
                 self._display_grid()
-                return
-            # Kiểm tra các ô tiếp theo và chưa được khám phá
+                return  # Stop further execution
+            # Check next cells and unexplored cells
             for child in self.successors(current_state):
-                if child in explored:  # Bỏ qua các ô đã khám phá
-                    continue
-                explored.add(child)
-
-                frontier.push(Node(child, current_node))
-                # Cập nhật GUI
-                self._grid[child.row][child.column] = Cell.FRONTIER
-                self._explored_listbox.insert(END, str(child))
-                self._frontier_listbox.insert(END, str(child))
-                self._explored_listbox.select_set(END)
-                self._explored_listbox.yview(END)
-                self._frontier_listbox.select_set(END)
-                self._frontier_listbox.yview(END)
+                new_cost = current_node.cost + 1
+                if child not in costs or new_cost < costs[child]:
+                    costs[child] = new_cost
+                    priority = new_cost + self.euclidean_distance(self.goal)(child)
+                    frontier.push(Node(child, current_node, new_cost, priority))
+                    explored.add(child)
+                    # Update GUI
+                    self._grid[child.row][child.column] = Cell.FRONTIER
+                    self._explored_listbox.insert(END, str(child))
+                    self._frontier_listbox.insert(END, str(child))
+                    self._explored_listbox.select_set(END)
+                    self._explored_listbox.yview(END)
+                    self._frontier_listbox.select_set(END)
+                    self._frontier_listbox.yview(END)
             self._display_grid()
             num_delay = int(self._interval_box.get()) * 1000
-            self.root.after(num_delay, self.step, frontier, explored, current_node)
+            self.root.after(num_delay, self.step, frontier, explored, costs, current_node)
+        else:
+            # If the frontier is empty and goal is not found, display a message
+            print("No path found to the goal.")
 
     # Thuật toán A* để tìm đường đi
     def astar(self, initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]], heuristic: Callable[[T], float]) -> Optional[Node[T]]:
@@ -272,11 +278,12 @@ class MazeGUI:
     # Chạy thuật toán A*
     def run_astar(self):
         self.clear()
-        initial_node = Node(self.start, None, 0.0, self.euclidean_distance(self.goal)(self.start)) #Hoặc lựa chọn hàm Manhattan
+        initial_node = Node(self.start, None, 0.0, self.euclidean_distance(self.goal)(self.start))  # Or use Manhattan distance
         frontier = PriorityQueue()
         frontier.push(initial_node)
         explored = set()
-        self.step(frontier, explored, None)
+        costs = {self.start: 0.0}
+        self.step(frontier, explored, costs, None)
 
     # Thay đổi mê cung
     def randomize_maze(self):
