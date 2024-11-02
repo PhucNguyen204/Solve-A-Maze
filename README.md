@@ -1,3 +1,4 @@
 # Solve-A-Maze
-Fckkkk
+
+Test1: Hiển thị thẳng đường đi 
 
