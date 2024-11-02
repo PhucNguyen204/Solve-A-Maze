@@ -165,7 +165,7 @@ class MazeGUI:
 
     # Thực hiện một bước trong thuật toán
     def step(self, frontier, explored, costs, last_node):
-        if isinstance(frontier, PriorityQueue) and not frontier.empty:  # Ensure empty is called as a property
+        if isinstance(frontier, PriorityQueue) and not frontier.empty: 
             current_node: Node[T] = frontier.pop()
             current_state: T = current_node.state
             self._frontier_listbox.delete(0, 0)
@@ -201,32 +201,50 @@ class MazeGUI:
             # Nếu không còn phần tử nào trong hàng đợi
             print("méo thấy.")
 
-    # Thuật toán A* để tìm đường đi
-    def astar(self, initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]], heuristic: Callable[[T], float]) -> Optional[Node[T]]:
-        # Khởi tạo hàng đợi ưu tiên với node ban đầu
-        frontier: PriorityQueue[Node[T]] = PriorityQueue()
-        frontier.push(Node(initial, None, 0.0, heuristic(initial)))
-        explored: Dict[T, float] = {initial: 0.0}
-        # Lặp lại cho đến khi không còn phần tử nào trong hàng đợi
-        while not frontier.empty:
-            current_node: Node[T] = frontier.pop()
-            current_state: T = current_node.state
+    # Chạy thuật toán A*
+    def run_astar(self):
+        self.clear()
+        initial_node = Node(self.start, None, 0.0, self.euclidean_distance(self.goal)(self.start)) #hoạc dùng hàm manhattan_distance
+        frontier = PriorityQueue()
+        frontier.push(initial_node)
+        explored = set()
+        costs = {self.start: 0.0}
+        self.step(frontier, explored, costs, None)
 
-            # Nếu tìm thấy đích, kết thúc
+    def astar(self, initial: MazeLocation, goal_test: Callable[[MazeLocation], bool], successors: Callable[[MazeLocation], List[MazeLocation]], heuristic: Callable[[MazeLocation], float]) -> Optional[Node[MazeLocation]]:
+        frontier = PriorityQueue[Node[MazeLocation]]()
+        start_node = Node(state=initial, parent=None, cost=0.0, heuristic=heuristic(initial))
+        frontier.push(start_node)
+        explored: Dict[MazeLocation, float] = {initial: 0.0}
+
+        while not frontier.empty:
+            current_node = frontier.pop()
+            current_state = current_node.state
+
             if goal_test(current_state):
                 return current_node
 
-            # Kiểm tra các vị trí kế tiếp
             for child in successors(current_state):
-                new_cost: float = current_node.cost + 1
+                new_cost = current_node.cost + 1  # Giả sử chi phí di chuyển giữa các ô là 1
                 if child not in explored or explored[child] > new_cost:
                     explored[child] = new_cost
-                    frontier.push(Node(child, current_node, new_cost, heuristic(child)))
+                    child_node = Node(state=child, parent=current_node, cost=new_cost, heuristic=heuristic(child))
+                    frontier.push(child_node)
+
         return None
 
-    # Kiểm tra xem vị trí hiện tại có phải là đích không
     def goal_test(self, ml: MazeLocation) -> bool:
         return ml == self.goal
+
+    def heuristic(self, ml: MazeLocation) -> float:
+        return MazeGUI.euclidean_distance(self.goal)(ml)
+
+    def find_path(self) -> List[MazeLocation]:
+        solution = self.astar(self.start, self.goal_test, self.successors, self.heuristic)
+        if solution is None:
+            return []
+        else:
+            return node_to_path(solution)
 
     # Tìm các vị trí kế tiếp có thể đi tới
     def successors(self, ml: MazeLocation) -> List[MazeLocation]:
@@ -276,16 +294,6 @@ class MazeGUI:
                     self._grid[row][column] = Cell.EMPTY
         self._grid[self.start.row][self.start.column] = Cell.START
         self._grid[self.goal.row][self.goal.column] = Cell.GOAL
-
-    # Chạy thuật toán A*
-    def run_astar(self):
-        self.clear()
-        initial_node = Node(self.start, None, 0.0, self.euclidean_distance(self.goal)(self.start)) #hoạc dùng hàm manhattan_distance
-        frontier = PriorityQueue()
-        frontier.push(initial_node)
-        explored = set()
-        costs = {self.start: 0.0}
-        self.step(frontier, explored, costs, None)
 
     # Thay đổi mê cung
     def randomize_maze(self):
