@@ -1,7 +1,7 @@
 import random
-from typing import List, NamedTuple, TypeVar, Set, Dict, Optional, Callable  # Thêm import Callable
+from typing import List, NamedTuple, TypeVar, Set, Dict, Optional, Callable  
 from enum import Enum
-from data_structures import Node, PriorityQueue, node_to_path  # Sửa lại import statement
+from data_structures import Node, PriorityQueue, node_to_path  
 from tkinter import *
 from tkinter.ttk import *
 
@@ -44,7 +44,7 @@ class MazeGUI:
         self._grid[goal.row][goal.column] = Cell.GOAL
         self._setup_GUI()
         self._setting_goal = False # Biến để kiểm tra xem người dùng có đang chọn mục tiêu không
-        self.root.mainloop()  # Đảm bảo mainloop được gọi ở đây
+        self.root.mainloop()  
 
     # Thiết lập GUI
     def _setup_GUI(self):
