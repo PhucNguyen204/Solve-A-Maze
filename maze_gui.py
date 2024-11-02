@@ -163,6 +163,15 @@ class MazeGUI:
         self._setting_goal = True
         print("Click on a cell to set it as the goal.")  #
 
+     # Tính khoảng cách Euclidean
+    @staticmethod
+    def euclidean_distance(goal: MazeLocation):
+        def distance(ml: MazeLocation) -> float:
+            xdist: int = ml.column - goal.column
+            ydist: int = ml.row - goal.row
+            return (xdist ** 2 + ydist ** 2) ** 0.5
+        return distance
+
     # Thực hiện một bước trong thuật toán
     def step(self, frontier, explored, costs, last_node):
         if isinstance(frontier, PriorityQueue) and not frontier.empty: 
@@ -204,48 +213,20 @@ class MazeGUI:
     # Chạy thuật toán A*
     def run_astar(self):
         self.clear()
-        initial_node = Node(self.start, None, 0.0, self.euclidean_distance(self.goal)(self.start)) #hoạc dùng hàm manhattan_distance
+        initial_node = Node(self.start, None, 0.0, self.euclidean_distance(self.goal)(self.start))
         frontier = PriorityQueue()
         frontier.push(initial_node)
         explored = set()
         costs = {self.start: 0.0}
         self.step(frontier, explored, costs, None)
 
-    def astar(self, initial: MazeLocation, goal_test: Callable[[MazeLocation], bool], successors: Callable[[MazeLocation], List[MazeLocation]], heuristic: Callable[[MazeLocation], float]) -> Optional[Node[MazeLocation]]:
-        frontier = PriorityQueue[Node[MazeLocation]]()
-        start_node = Node(state=initial, parent=None, cost=0.0, heuristic=heuristic(initial))
-        frontier.push(start_node)
-        explored: Dict[MazeLocation, float] = {initial: 0.0}
-
-        while not frontier.empty:
-            current_node = frontier.pop()
-            current_state = current_node.state
-
-            if goal_test(current_state):
-                return current_node
-
-            for child in successors(current_state):
-                new_cost = current_node.cost + 1  # Giả sử chi phí di chuyển giữa các ô là 1
-                if child not in explored or explored[child] > new_cost:
-                    explored[child] = new_cost
-                    child_node = Node(state=child, parent=current_node, cost=new_cost, heuristic=heuristic(child))
-                    frontier.push(child_node)
-
-        return None
+   
+      
 
     def goal_test(self, ml: MazeLocation) -> bool:
         return ml == self.goal
 
-    def heuristic(self, ml: MazeLocation) -> float:
-        return MazeGUI.euclidean_distance(self.goal)(ml)
-
-    def find_path(self) -> List[MazeLocation]:
-        solution = self.astar(self.start, self.goal_test, self.successors, self.heuristic)
-        if solution is None:
-            return []
-        else:
-            return node_to_path(solution)
-
+    
     # Tìm các vị trí kế tiếp có thể đi tới
     def successors(self, ml: MazeLocation) -> List[MazeLocation]:
         locations: List[MazeLocation] = []
@@ -266,14 +247,6 @@ class MazeGUI:
         self._grid[self.start.row][self.start.column] = Cell.START
         self._grid[self.goal.row][self.goal.column] = Cell.GOAL
     
-    # Tính khoảng cách Euclidean
-    @staticmethod
-    def euclidean_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:  
-        def distance(ml: MazeLocation) -> float:
-            xdist: int = ml.column - goal.column
-            ydist: int = ml.row - goal.row
-            return (xdist ** 2 + ydist ** 2) ** 0.5
-        return distance
     # Xóa các dấu vết trên lưới
     def clear(self):
         self._frontier_listbox.delete(0, END)
