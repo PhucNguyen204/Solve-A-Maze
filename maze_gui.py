@@ -125,9 +125,9 @@ class MazeGUI:
         # Spinbox cho khoảng thời gian
         interval_label: Label = Label(frame, text="Interval", style="BG.TLabel", anchor="center")
         interval_label.grid(row=self._rows + 1, column=self._columns + 2, columnspan=3, sticky=N + S + E + W)
-        self._interval_box: Combobox = Combobox(frame, state="readonly", values=[1, 2, 3, 4, 5], justify="center",
+        self._interval_box: Combobox = Combobox(frame, state="readonly", values=[0.1, 0.2, 0.5, 1, 2], justify="center",
                                                 style="BG.TCombobox")
-        self._interval_box.set(2)
+        self._interval_box.set(0.2)  # Set default to faster speed
         self._interval_box.grid(row=self._rows + 2, column=self._columns + 2, columnspan=3, sticky=N + S + E + W, padx=0, pady=0)  # Giảm padding
         # Đóng gói và hiển thị
         frame.pack(fill="both", expand=True)
@@ -195,7 +195,7 @@ class MazeGUI:
                     self._frontier_listbox.select_set(END)
                     self._frontier_listbox.yview(END)
             self._display_grid()
-            num_delay = int(self._interval_box.get()) * 1000
+            num_delay = int(float(self._interval_box.get()) * 1000)  # Convert to milliseconds
             self.root.after(num_delay, self.step, frontier, explored, costs, current_node)
         else:
             # Nếu không còn phần tử nào trong hàng đợi
@@ -274,16 +274,6 @@ class MazeGUI:
             ydist: int = ml.row - goal.row
             return (xdist ** 2 + ydist ** 2) ** 0.5
         return distance
-    
-    # Tính khoảng cách Manhattan
-    @staticmethod
-    def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:  
-        def distance(ml: MazeLocation) -> float:
-            xdist: int = abs(ml.column - goal.column)
-            ydist: int = abs(ml.row - goal.row)
-            return xdist + ydist
-        return distance
-
     # Xóa các dấu vết trên lưới
     def clear(self):
         self._frontier_listbox.delete(0, END)
